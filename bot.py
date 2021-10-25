@@ -21,7 +21,9 @@ token = "OTAxMDUyMDczNzA4MjQwOTE2.YXKQIw.-CaK7BpXAark7tU94Uv-inSkjKk"
 #     def __init__(self, *args, **options):
 #         super().__init__(*args,**kwargs)
     
-#     async def getIpoResult(self,)
+#     async def on_guild_join(self,guild):
+#         print(guild)
+
 
 
 def getEmbed(title="You forgot to pass title",color=discord.Colour.orange(),description="forgot desc?"):
@@ -31,19 +33,34 @@ def getEmbed(title="You forgot to pass title",color=discord.Colour.orange(),desc
         color=color
     )
 
+async def isServerRegistered(ctx):
+    if len(Guilds.objects.filter(guild_id=ctx.message.guild.id)) == 0:
+        embed = getEmbed(title="Server Not Registered!!",color=discord.Colour.red(),description="Type '.register' to resiter server before doing anything")
+        await ctx.send(embed=embed)
+        return 0
+    return 1
+
+
 bot  = commands.Bot(command_prefix=".")
 bot.remove_command('help')
+
+
 
 @bot.command()
 async def help(ctx):
     embed = discord.Embed(
         title = "Awesome Bot Commands",
-        description = "Welcome to the help section. Here are all the commands for this tool(bot)",
+        description = "Welcome to the help section. Here are all the commands",
         color = discord.Colour.orange()
     )
     embed.add_field(
         name=".help",
         value="Show all available command",
+        inline=False
+    )
+    embed.add_field(
+        name=".register",
+        value="Register this server for proper functionality",
         inline=False
     )
     embed.add_field(
@@ -56,17 +73,28 @@ async def help(ctx):
         """,
         inline=False
     )
-    # embed.set_thumbnail(url="https://www.pixsy.com/wp-content/uploads/2021/04/ben-sweet-2LowviVHZ-E-unsplash-1.jpeg")
-    # await ctx.send("""
-    # this is custom help command
-    # """)
+    embed.add_field(
+        name=".add",
+        value="Add User and boid\nUsage: .add ravan 1234567890123456",
+        inline=False
+    )
+    embed.add_field(
+        name=".listuser",
+        value="List all the users and boids",
+        inline=False
+    )
+    
     await ctx.send(embed=embed)
 
 
 @bot.command()
 async def iporesult(ctx,*args):
     print("send the file")
+    isRegistered = await isServerRegistered(ctx)
+    if isRegistered == 0:
+        return
     boids = Boids.objects.filter(guild=Guilds.objects.get(guild_id=ctx.message.guild.id))
+    
     print(boids)
     filteredNames = [each.username for each in boids]
     if "--company" in args:
@@ -161,9 +189,8 @@ async def add(ctx,*args):
                 await ctx.send(embed=embed)
                 return
             guild = Guilds.objects.filter(guild_id=ctx.message.guild.id)
-            if len(guild) == 0:
-                embed = getEmbed(title="Server Not Registered!!",color=discord.Colour.red(),description="Type '.register' to resiter server before doing anything")
-                await ctx.send(embed=embed)
+            isRegistered = await isServerRegistered(ctx)
+            if isRegistered == 0:
                 return
 
             if len(Boids.objects.filter(guild=guild[0],username=args[0])) > 0 or len(Boids.objects.filter(guild=guild[0],boid=args[1])) > 0:
@@ -177,7 +204,6 @@ async def add(ctx,*args):
             
     except Exception as e:
         await ctx.send(e)
-    # await ctx.send(ctx.message.guild.id)
 
 @bot.command()
 async def register(ctx):
@@ -193,6 +219,9 @@ async def register(ctx):
 
 @bot.command()
 async def listuser(ctx):
+    isRegistered = await isServerRegistered(ctx)
+    if (isRegistered == 0):
+        return
     guild_id = ctx.message.guild.id
     users = Boids.objects.filter(guild=Guilds.objects.get(guild_id=guild_id))
     embed = discord.Embed(title="List of Users",color=discord.Colour.orange())
