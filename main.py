@@ -1,9 +1,9 @@
-from discord import message
+
 from discord.colour import Color
 from discord.ext import commands
 import discord
 from django.db.models.fields import DecimalField
-import main
+import checkipo
 import requests
 from PIL import Image, ImageDraw, ImageFont
 import django
@@ -131,7 +131,7 @@ async def iporesult(ctx,*args):
         
     client = requests.session() #using session is bit more faster than not using it
     try:
-        allCompanies = client.get(main.companies)
+        allCompanies = client.get("https://iporesult.cdsc.com.np/result/companyShares/fileUploaded")
         if allCompanies.status_code != 200:
             await ctx.send("failed Try again later")
             return
@@ -144,7 +144,7 @@ async def iporesult(ctx,*args):
             # print(companyName.lower()+" ==> "+company['name'].lower())
             if companyName.lower() in company['name'].lower():
                 # print("vitra aayo")
-                main.shareNo = str(company['id'])
+                checkipo.shareNo = str(company['id'])
                 scrip = str(company['scrip'])
                 # # print(company['name'])
                 # await ctx.send(company['name'])
@@ -160,8 +160,8 @@ async def iporesult(ctx,*args):
         return
 
     filteredNameLists = [[each.boid,each.username] for each in boids if each.username in filteredNames]
-    main.withThreading(client,filteredNameLists)
-    table_str = main.table.get_string().replace(main.colors['red'],"").replace(main.colors['green'],"").replace(main.colors['reset'],"")
+    checkipo.withThreading(client,filteredNameLists)
+    table_str = checkipo.table.get_string().replace(checkipo.colors['red'],"").replace(checkipo.colors['green'],"").replace(checkipo.colors['reset'],"")
     print(table_str)
     im = Image.new("RGB", (400, 400), "#1a8a8a")
     draw = ImageDraw.Draw(im)
@@ -173,8 +173,8 @@ async def iporesult(ctx,*args):
     im.save("table.png")
     await ctx.send(file=discord.File("table.png"))
 
-    main.table = main.PrettyTable()
-    main.table.field_names = ['id','name','status']
+    checkipo.table = checkipo.PrettyTable()
+    checkipo.table.field_names = ['id','name','status']
 
 
 @bot.command()
