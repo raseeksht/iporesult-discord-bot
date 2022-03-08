@@ -163,7 +163,13 @@ async def iporesult(ctx,*args):
     checkipo.withThreading(client,filteredNameLists)
     table_str = checkipo.table.get_string().replace(checkipo.colors['red'],"").replace(checkipo.colors['green'],"").replace(checkipo.colors['reset'],"")
     print(table_str)
-    im = Image.new("RGB", (400, 400), "#1a8a8a")
+
+    len_of_str = table_str.count("\n")
+    initial_height = 50 
+    each_line_spacing = 20
+    final_height = initial_height + len_of_str * each_line_spacing
+
+    im = Image.new("RGB", (400, final_height), "#1a8a8a")
     draw = ImageDraw.Draw(im)
 
     font = ImageFont.truetype("font/mono1.ttf", 15)
